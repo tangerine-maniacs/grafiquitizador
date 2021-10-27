@@ -57,7 +57,7 @@ int main()
     }
   }
 
-  write_bmp("fn.bmp", HEIGHT, WIDTH, mat, 0);
+  write_bmp("fn.bmp", HEIGHT, WIDTH, mat);
 
   return 0;
 }

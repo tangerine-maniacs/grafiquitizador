@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define DEBUG
+
 // Print variables to file_pointer
 // (Little-endian)
 void print_bytes(FILE *fp, void *p, size_t len)
@@ -38,7 +40,7 @@ void bitchar(char *result, char c)
   }
 }
 
-int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][columns], char debug)
+int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][columns])
 {
   FILE *fp;
 
@@ -101,14 +103,16 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
     // Debug statement
     char bufbinary[11] = "0b";
     bitchar(bufbinary, buf);
-    if (debug)
-      printf("i=%4zu, r=%2zu, c=%2zu, buf=%2x (%s)\n", i, row, column, buf, bufbinary);
+#ifdef DEBUG
+    printf("i=%4zu, r=%2zu, c=%2zu, buf=%2x (%s)\n", i, row, column, buf, bufbinary);
+#endif
 
     if ((i + 1) % 8 == 0)
     {
       fprintf(fp, "%c", buf);
-      if (debug)
-        printf("Flushed buffer, %x\n", buf);
+#ifdef DEBUG
+      printf("Flushed buffer, %2x (%s)\n", buf, bufbinary);
+#endif
       buf = 0;
     }
 
@@ -127,9 +131,11 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
   // to shift them left.
   if ((i % 8) != 0)
   {
+#ifdef DEBUG
     // Debug statement
     char bufbinary[11] = "0b";
     bitchar(bufbinary, buf);
+#endif
 
     printf("Flushing buffer after loop. current=%2x (%s)\n", buf, bufbinary);
     // I don't know whether this should be executed or not.
@@ -138,9 +144,11 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
     // 0b0111000, 0b11100000, or 0b00000111, (or maybe even 0b00001110)
     buf <<= 8 - (i % 8);
 
+#ifdef DEBUG
     bufbinary[2] = '\0';
     bitchar(bufbinary, buf);
     printf("Flushed buffer, %2x (%s)\n", buf, bufbinary);
+#endif
     fprintf(fp, "%c", buf);
   }
 
