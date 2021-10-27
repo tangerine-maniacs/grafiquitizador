@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <strings.h>
 
 // Print variables to file_pointer
 // (Little-endian)
@@ -18,6 +19,15 @@ void print_short(FILE *fp, short a)
 void print_byte(FILE *fp, char a)
 {
   print_bytes(fp, &a, sizeof(a));
+}
+
+// For debugging
+void bitchar(char *result, char c)
+{
+  for (size_t i = 0; i < 8; i++)
+  {
+    sprintf(result + strlen(result), "%d", !!((c << i) & 0x80));
+  }
 }
 
 int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][columns])
@@ -69,17 +79,20 @@ int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][column
   // are still some bits in the char, i append however many zeroes
   // it's necessary and send that.
   size_t i = 0;
-  char buf = 0;
+  unsigned char buf = 0;
   while (i < rows * columns)
   {
     size_t row = i / columns;
     size_t column = i % columns;
-    printf("r=%zu, c=%zu, i=%zu, R=%zu, C=%zu\n", row, column, i, rows, columns);
 
+    buf <<= 1;
     if (mat[row][column])
       buf |= 0b00000001;
-    buf <<= 1;
-    // printf("#%zd. buf=%X, m[%zd][%zd]=%d\n", i, buf, row, column, mat[row][column]);
+
+    // Debug statement
+    char bufbinary[11] = "0b";
+    bitchar(bufbinary, buf);
+    printf("i=%4zu, r=%2zu, c=%2zu, buf=%2x (%s)\n", i, row, column, buf, bufbinary);
 
     if ((i + 1) % 8 == 0)
     {
