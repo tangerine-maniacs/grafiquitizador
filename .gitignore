@@ -1,8 +1,16 @@
-build/
 .vscode/
+
+Testing/
+.idea/
+*.cbp
+
+build/
 CMakeFiles/
 *.cmake
 CMakeCache.txt
 Makefile
+
 grafiquitizador
 *.bmp
+
+.DS_Store

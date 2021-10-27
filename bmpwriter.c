@@ -33,10 +33,10 @@ int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][column
 
   //http://www.ece.ualberta.ca/~elliott/ee552/studentAppNotes/2003_w/misc/bmp_file_format/bmp_file_format.htm
   // Header (size 14)
-  fprintf(fp, "BM");   // signature
-  print_int(fp, 1);    // bmp size
-  print_int(fp, 0);    // unused
-  print_int(fp, 0x3e); // bitmap image data offset
+  fprintf(fp, "BM");                    // signature
+  print_int(fp, 0x3e + rows * columns); // bmp size
+  print_int(fp, 0);                     // unused
+  print_int(fp, 0x3e);                  // bitmap image data offset
 
   // InfoHeader (size 40)
   print_int(fp, 40);      // infoheader size
@@ -72,11 +72,15 @@ int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][column
   char buf = 0;
   while (i < rows * columns)
   {
-    printf("Iteration %d\n", i);
+    size_t row = columns % i;
+    printf("r%zu", row);
+    size_t column = columns / i;
+    printf("c%zu", column);
 
-    if (mat[i])
+    if (mat[row][column])
       buf |= 0b00000001;
     buf <<= 1;
+    // printf("#%zd. buf=%X, m[%zd][%zd]=%d\n", i, buf, row, column, mat[row][column]);
 
     if ((i + 1) % 8 == 0)
     {
@@ -91,18 +95,18 @@ int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][column
   // If there are some bits leftover in the char,
   // push the leftmost of those bits to the left of the
   // byte.
-  // As i is the number of iterations - 1, i+1 is the
-  // number of iterations. If it is not a multiple of 8,
-  // there are bits leftover, and (i+1) % 8 tells us how
-  // many of those there are.
-  // So 8 - ((i+1) % 8) tells us how many times we have
+  // As i is the number of iterations, it normally wouldn't be,
+  // but when we leave the loop it's incremented one last time.
+  // If it is not a multiple of 8, there are bits leftover, and
+  // i % 8 tells us how many of those there are.
+  // So 8 - (i % 8) tells us how many times we have
   // to shift them left.
-  // if ((i + 1) % 8 != 0)
-  // {
-  //   printf("Flushing buffer after loop\n");
-  //   buf <<= 8 - ((i + 1) % 8);
-  //   fprintf(fp, "%c", buf);
-  // }
+  if (i % 8 != 0)
+  {
+    printf("Flushing buffer after loop\n");
+    buf <<= 8 - (i % 8);
+    fprintf(fp, "%c", buf);
+  }
 
   fclose(fp);
   return 0;
