@@ -72,10 +72,9 @@ int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][column
   char buf = 0;
   while (i < rows * columns)
   {
-    size_t row = columns % i;
-    printf("r%zu", row);
-    size_t column = columns / i;
-    printf("c%zu", column);
+    size_t row = i / columns;
+    size_t column = i % columns;
+    printf("r=%zu, c=%zu, i=%zu, R=%zu, C=%zu\n", row, column, i, rows, columns);
 
     if (mat[row][column])
       buf |= 0b00000001;
@@ -88,6 +87,7 @@ int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][column
       printf("Flushed buffer, %x\n", buf);
       buf = 0;
     }
+
     i++;
   }
 

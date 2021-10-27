@@ -11,7 +11,7 @@ int main()
   {
     for (int j = 0; j < w; j++)
     {
-      mat[i][j] = j % 2;
+      mat[i][j] = (i % 2) && (j % 2);
     }
   }
 
