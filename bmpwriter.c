@@ -40,7 +40,7 @@ void bitchar(char *result, char c)
   }
 }
 
-int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][columns])
+int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][columns][3])
 {
   FILE *fp;
 
@@ -54,17 +54,17 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
   //http://www.ece.ualberta.ca/~elliott/ee552/studentAppNotes/2003_w/misc/bmp_file_format/bmp_file_format.htm
   //https://medium.com/sysf/bits-to-bitmaps-a-simple-walkthrough-of-bmp-image-format-765dc6857393
   // Header (size 14)
-  fprintf(fp, "BM");                           // signature
-  print_uint(fp, 0x3e + (rows * columns) * 2); // bmp size
-  print_uint(fp, 0);                           // unused
-  print_uint(fp, 0x46);                        // bitmap image data offset
+  fprintf(fp, "BM");                            // signature
+  print_uint(fp, 0x36 + (rows * columns) * 24); // bmp size
+  print_uint(fp, 0);                            // unused
+  print_uint(fp, 0x36);                         // bitmap image data offset
 
   // InfoHeader (size 40)
   print_uint(fp, 40);     // infoheader size
   print_int(fp, columns); // bitmap width
   print_int(fp, rows);    // bitmap height
   print_ushort(fp, 1);    // number of planes (don't know what it means)
-  print_ushort(fp, 2);    // bits per pixel (1 = monochrome)
+  print_ushort(fp, 24);   // bits per pixel (1 = monochrome)
   print_uint(fp, 0);      // compression (0 = no compression)
   print_uint(fp, 0);      // size of image (0 because compression = 0)
   print_int(fp, 0);       // horizontal resolution (px/m)
@@ -72,27 +72,7 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
   print_uint(fp, 4);      // colours used
   print_uint(fp, 0);      // important colours (0 = all)
 
-  // ColourTable (size 4*numcolours = 8 bytes)
-  // colour 0 (black)
-  print_byte(fp, 0x00); // blue intensity
-  print_byte(fp, 0x00); // green intensity
-  print_byte(fp, 0x00); // red intensity
-  print_byte(fp, 0);    // unused
-  // colour 1 (white)
-  print_byte(fp, 0xff); // blue intensity
-  print_byte(fp, 0xff); // green intensity
-  print_byte(fp, 0xff); // red intensity
-  print_byte(fp, 0);    // unused
-  // colour 2 (red)
-  print_byte(fp, 0x00); // blue intensity
-  print_byte(fp, 0x00); // green intensity
-  print_byte(fp, 0xff); // red intensity
-  print_byte(fp, 0);    // unused
-  // colour 3 (blue)
-  print_byte(fp, 0xff); // blue intensity
-  print_byte(fp, 0x00); // green intensity
-  print_byte(fp, 0x00); // red intensity
-  print_byte(fp, 0);    // unused
+  // ColourTable not present because bits per pixel >= 8
 
   // in order to write bits, i first need to join them
   // together in 1-byte sequences, and then I can print them.
@@ -100,66 +80,22 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
   // are still some bits in the char, i append however many zeroes
   // it's necessary and send that.
   size_t i = 0;
-  unsigned char buf = 0;
   while (i < rows * columns)
   {
     size_t row = i / columns;
     size_t column = i % columns;
 
-    buf <<= 2;
-    if (mat[row][column])
-      buf |= mat[row][column];
+    unsigned char pix[3];
+    pix[0] = mat[row][column][0];
+    pix[1] = mat[row][column][1];
+    pix[2] = mat[row][column][2];
 
-    // Debug statement
-    char bufbinary[11] = "0b";
-    bitchar(bufbinary, buf);
 #ifdef DEBUG
-    printf("i=%4zu, r=%2zu, c=%2zu, buf=%2x (%s)\n", i, row, column, buf, bufbinary);
+    printf("i=%16zu, r=%8zu, c=%8zu, pix={ %2x, %2x, %2x }\n", i, row, column, pix[0], pix[1], pix[2]);
 #endif
-
-    if ((i + 1) % 8 == 0)
-    {
-      fprintf(fp, "%c", buf);
-#ifdef DEBUG
-      printf("Flushed buffer, %2x (%s)\n", buf, bufbinary);
-#endif
-      buf = 0;
-    }
+    fprintf(fp, "%c%c%c", pix[0], pix[1], pix[2]);
 
     i++;
-  }
-
-  // WARNING: This may not do what I intend for it to do.
-  // If there are some bits leftover in the char,
-  // push the leftmost of those bits to the left of the
-  // byte.
-  // As i is the number of iterations, it normally wouldn't be,
-  // but when we leave the loop it's incremented one last time.
-  // If it is not a multiple of 8, there are bits leftover, and
-  // i % 8 tells us how many of those there are.
-  // So 8 - (i % 8) tells us how many times we have
-  // to shift them left.
-  if ((i % 8) != 0)
-  {
-#ifdef DEBUG
-    // Debug statement
-    char bufbinary[11] = "0b";
-    bitchar(bufbinary, buf);
-#endif
-
-    printf("Flushing buffer after loop. current=%2x (%s)\n", buf, bufbinary);
-    // I don't know whether this should be executed or not.
-    // given a buf=0b00000111,
-    // I don't know whether that should be
-    // 0b0111000, 0b11100000, or 0b00000111, (or maybe even 0b00001110)
-    buf <<= 8 - (i % 8);
-
-#ifdef DEBUG
-    bufbinary[2] = '\0';
-    bitchar(bufbinary, buf);
-    printf("Flushed buffer, %2x (%s)\n", buf, bufbinary);
-#endif
-    fprintf(fp, "%c", buf);
   }
 
   fclose(fp);
