@@ -54,34 +54,44 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
   //http://www.ece.ualberta.ca/~elliott/ee552/studentAppNotes/2003_w/misc/bmp_file_format/bmp_file_format.htm
   //https://medium.com/sysf/bits-to-bitmaps-a-simple-walkthrough-of-bmp-image-format-765dc6857393
   // Header (size 14)
-  fprintf(fp, "BM");                     // signature
-  print_uint(fp, 0x3e + rows * columns); // bmp size
-  print_uint(fp, 0);                     // unused
-  print_uint(fp, 0x3e);                  // bitmap image data offset
+  fprintf(fp, "BM");                           // signature
+  print_uint(fp, 0x3e + (rows * columns) * 2); // bmp size
+  print_uint(fp, 0);                           // unused
+  print_uint(fp, 0x46);                        // bitmap image data offset
 
   // InfoHeader (size 40)
   print_uint(fp, 40);     // infoheader size
   print_int(fp, columns); // bitmap width
   print_int(fp, rows);    // bitmap height
   print_ushort(fp, 1);    // number of planes (don't know what it means)
-  print_ushort(fp, 1);    // bits per pixel (1 = monochrome)
+  print_ushort(fp, 2);    // bits per pixel (1 = monochrome)
   print_uint(fp, 0);      // compression (0 = no compression)
   print_uint(fp, 0);      // size of image (0 because compression = 0)
   print_int(fp, 0);       // horizontal resolution (px/m)
   print_int(fp, 0);       // vertical resolution (px/m)
-  print_uint(fp, 2);      // colours used
+  print_uint(fp, 4);      // colours used
   print_uint(fp, 0);      // important colours (0 = all)
 
   // ColourTable (size 4*numcolours = 8 bytes)
   // colour 0 (black)
-  print_byte(fp, 0x00); // red intensity
-  print_byte(fp, 0x00); // green intensity
   print_byte(fp, 0x00); // blue intensity
+  print_byte(fp, 0x00); // green intensity
+  print_byte(fp, 0x00); // red intensity
   print_byte(fp, 0);    // unused
   // colour 1 (white)
-  print_byte(fp, 0xff); // red intensity
-  print_byte(fp, 0xff); // green intensity
   print_byte(fp, 0xff); // blue intensity
+  print_byte(fp, 0xff); // green intensity
+  print_byte(fp, 0xff); // red intensity
+  print_byte(fp, 0);    // unused
+  // colour 2 (red)
+  print_byte(fp, 0x00); // blue intensity
+  print_byte(fp, 0x00); // green intensity
+  print_byte(fp, 0xff); // red intensity
+  print_byte(fp, 0);    // unused
+  // colour 3 (blue)
+  print_byte(fp, 0xff); // blue intensity
+  print_byte(fp, 0x00); // green intensity
+  print_byte(fp, 0x00); // red intensity
   print_byte(fp, 0);    // unused
 
   // in order to write bits, i first need to join them
@@ -96,9 +106,9 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
     size_t row = i / columns;
     size_t column = i % columns;
 
-    buf <<= 1;
+    buf <<= 2;
     if (mat[row][column])
-      buf |= 0b00000001;
+      buf |= mat[row][column];
 
     // Debug statement
     char bufbinary[11] = "0b";
