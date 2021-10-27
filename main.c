@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "bmpwriter.h"
 
-#define WIDTH 66
-#define HEIGHT 66
+#define WIDTH 512
+#define HEIGHT 512
 
 // Didn't want to include the math library only for this
 double diff(double a, double b)
@@ -13,11 +13,11 @@ double diff(double a, double b)
 int main()
 { 
     // Pixel matrix
-    int mat[HEIGHT][WIDTH] = {};
+    char mat[HEIGHT][WIDTH] = {};
     
     // Graph variables
     double x_scale = 5, y_scale = 5;
-    double f_tolerance = 3.0e-1;
+    double f_tolerance = 8.0e-2;
     
     // Function variables
     double x, y, f;
@@ -40,10 +40,14 @@ int main()
         {
             x = (double)_x / (WIDTH - 1) * x_scale - (x_scale/2.0);
             
-            // Function: y = - x² + 2
-            f = - x * x + 2;
+            // Function: y = x³ - 2x² + 1
+            f = 2*x*x*x - 2 * x*x + 2;
 
-            if (diff(f, y) < f_tolerance)
+            if (diff(f, y) < f_tolerance)   // Function
+            {
+                mat[_y][_x] = 1;
+            }
+            else if (diff(x, 0) < x_scale / WIDTH || diff(y, 0) < y_scale/HEIGHT) // Axes
             {
                 mat[_y][_x] = 1;
             }
@@ -54,7 +58,7 @@ int main()
         }
     }
 
-    write_bmp("fn.bmp", HEIGHT, WIDTH, mat);
+    write_bmp("fn.bmp", HEIGHT, WIDTH, mat, 0);
 
     return 0;
 }
