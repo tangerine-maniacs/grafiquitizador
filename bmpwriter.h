@@ -1,7 +1,7 @@
 #ifndef BMPWRITER
 #define BMPWRITER
 
-int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][columns]);
+int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][columns], char debug);
 // struct BMP_HEADER
 // {
 //   short signature;

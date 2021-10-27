@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 
 // Print variables to file_pointer
 // (Little-endian)
@@ -38,7 +38,7 @@ void bitchar(char *result, char c)
   }
 }
 
-int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][columns])
+int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][columns], char debug)
 {
   FILE *fp;
 
@@ -101,12 +101,14 @@ int write_bmp(char *file_name, size_t rows, size_t columns, int mat[rows][column
     // Debug statement
     char bufbinary[11] = "0b";
     bitchar(bufbinary, buf);
-    printf("i=%4zu, r=%2zu, c=%2zu, buf=%2x (%s)\n", i, row, column, buf, bufbinary);
+    if (debug)
+      printf("i=%4zu, r=%2zu, c=%2zu, buf=%2x (%s)\n", i, row, column, buf, bufbinary);
 
     if ((i + 1) % 8 == 0)
     {
       fprintf(fp, "%c", buf);
-      printf("Flushed buffer, %x\n", buf);
+      if (debug)
+        printf("Flushed buffer, %x\n", buf);
       buf = 0;
     }
 
