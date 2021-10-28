@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "bmpwriter.h"
 
-#define WIDTH 512
-#define HEIGHT 512
+#define WIDTH 1024
+#define HEIGHT 1024
 
 // Didn't want to include the math library only for this
 double diff(double a, double b)
@@ -13,7 +13,7 @@ double diff(double a, double b)
 int main()
 {
   // Pixel matrix
-  char mat[HEIGHT][WIDTH] = {};
+  char mat[HEIGHT][WIDTH][3] = {};
 
   // Graph variables
   double x_scale = 5, y_scale = 5;
@@ -27,7 +27,7 @@ int main()
     /*
       current_column-row  = _y - _x       ** Note that _y starts counting from max
       total_columns-rows  = WIDTH - HEIGHT
-      Offset              = - Scale / 2 
+      Offset              = - Scale / 2
 
       x = current_column / total_columns * X_Scale - Offset
       y = current_row / total_rows * Y_Scale - Offset
@@ -44,15 +44,21 @@ int main()
 
       if (diff(f, y) < f_tolerance) // Function
       {
-        mat[_y][_x] = 1;
+        mat[_y][_x][0] = 0xff;
+        mat[_y][_x][1] = 0x66;
+        mat[_y][_x][2] = 0x66;
       }
       else if (diff(x, 0) < x_scale / WIDTH || diff(y, 0) < y_scale / HEIGHT) // Axes
       {
-        mat[_y][_x] = 1;
+        mat[_y][_x][0] = 0x00;
+        mat[_y][_x][1] = 0x00;
+        mat[_y][_x][2] = 0x00;
       }
       else
       {
-        mat[_y][_x] = 0;
+        mat[_y][_x][0] = 0xff;
+        mat[_y][_x][1] = 0xff;
+        mat[_y][_x][2] = 0xff;
       }
     }
   }

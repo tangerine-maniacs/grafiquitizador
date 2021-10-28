@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define DEBUG
+// #define DEBUG
 
 // Print variables to file_pointer
 // (Little-endian)
@@ -85,10 +85,11 @@ int write_bmp(char *file_name, size_t rows, size_t columns, char mat[rows][colum
     size_t row = i / columns;
     size_t column = i % columns;
 
+    // Inverted because .bmp uses bgr and we use rgb.
     unsigned char pix[3];
-    pix[0] = mat[row][column][0];
+    pix[0] = mat[row][column][2];
     pix[1] = mat[row][column][1];
-    pix[2] = mat[row][column][2];
+    pix[2] = mat[row][column][0];
 
 #ifdef DEBUG
     printf("i=%16zu, r=%8zu, c=%8zu, pix={ %2x, %2x, %2x }\n", i, row, column, pix[0], pix[1], pix[2]);
