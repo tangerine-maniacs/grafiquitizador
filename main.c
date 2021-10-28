@@ -1,3 +1,5 @@
+// GPL-3.0-only
+
 #include <stdio.h>
 #include "bmpwriter.h"
 
